@@ -31,7 +31,7 @@ categories: ['C++']
 >
 > 默认情况下使用<font color='orange'>deque</font>（一种将list和vector结合起来的容器）。
 >
-> <img src="C:\Users\jason\AppData\Roaming\Typora\typora-user-images\image-20230523225737510.png" alt="image-20230523225737510" style="zoom:50%;" />
+> <!-- 图片已移除：Windows 绝对路径无法访问 -->
 
 ## 1.2 stack的使用
 
@@ -236,11 +236,11 @@ categories: ['C++']
 
 > deque(双端队列)：是一种双开口的"连续"空间的数据结构，双开口的含义是：可以在头尾两端进行插入和删除操作，且时间复杂度为O(1)，与vector比较，头插效率高，不需要搬移元素；与list比较，空间利用率比较高。
 >
-> <img src="C:\Users\jason\AppData\Roaming\Typora\typora-user-images\image-20230524231957106.png" alt="image-20230524231957106" style="zoom:50%;" />
+> <!-- 图片已移除：Windows 绝对路径无法访问 -->
 >
 >   实际上deque并不是一段连续的空间，它实际上的结构如下图所示：
 >
-> <img src="C:\Users\jason\AppData\Roaming\Typora\typora-user-images\image-20230524232054468.png" alt="image-20230524232054468" style="zoom:50%;" />
+> <!-- 图片已移除：Windows 绝对路径无法访问 -->
 >
 > 那么为了维护deque看似连续的结构，以及随机访问的特性，deque的迭代器设计有些复杂如下图所示：
 >
@@ -253,7 +253,7 @@ categories: ['C++']
 > - last指向的当前buffer的最后一个元素的地址。
 > - node指向的中控器中的存贮当前buffer的地址的位置。
 >
-> <img src="C:\Users\jason\AppData\Roaming\Typora\typora-user-images\image-20230524233434634.png" alt="image-20230524233434634" style="zoom:50%;" />
+> <!-- 图片已移除：Windows 绝对路径无法访问 -->
 >
 > deque::begin() 传回迭代器 start，deque::end() 传回迭代器finish。这两个迭代器都是 deque 的 data members。
 

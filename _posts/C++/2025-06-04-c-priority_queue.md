@@ -48,7 +48,7 @@ categories: ['C++']
 > | [empty()](https://cplusplus.com/reference/queue/priority_queue/empty/) |                 判断当前优先级队列是否为空                  |
 > | [top()](https://cplusplus.com/reference/queue/priority_queue/top/) |                 返回堆顶元素即最大/最小元素                 |
 > | [push(x)](https://cplusplus.com/reference/queue/priority_queue/push/) |                 **在优先级队列中插入元素**x                 |
-> | [pop()](http://www.cplusplus.com/reference/queue/priority_queue/pop/) |               删除堆顶的元素即最大/最小的元素               |
+> | [pop()](https://www.cplusplus.com/reference/queue/priority_queue/pop/) |               删除堆顶的元素即最大/最小的元素               |
 >
 > 【注意】
 >
