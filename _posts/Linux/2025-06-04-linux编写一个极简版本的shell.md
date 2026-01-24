@@ -2,6 +2,7 @@
 title: Linux编写一个极简版本的Shell
 date: 2025-06-04 19:41:27 +0800
 categories: ['Linux']
+tags: ['Linux', 'Shell']
 ---
 
 # Linux编写一个极简版本的Shell

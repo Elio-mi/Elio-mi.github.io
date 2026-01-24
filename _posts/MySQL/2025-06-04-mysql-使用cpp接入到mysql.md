@@ -2,6 +2,7 @@
 title: MySQL-使用CPP接入到MySQL
 date: 2025-06-04 19:41:27 +0800
 categories: ['MySQL']
+tags: ['MySQL', 'SQL', '数据库']
 ---
 
 # MySQL-使用CPP接入到MySQL

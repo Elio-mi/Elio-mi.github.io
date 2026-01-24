@@ -2,6 +2,7 @@
 title: C++ priority_queue
 date: 2025-06-04 19:41:27 +0800
 categories: ['C++']
+tags: ['C++', 'IO']
 ---
 
 # C++ priority_queue
