@@ -20,7 +20,6 @@ tags: ['UIKit', 'UIViewController', 'Objective-C', '底层原理', '架构', '�
 8. [视图栈管理 (UINavigationController)](#8-视图栈管理-uinavigationcontroller)
     - [导航压栈 (Push / Pop)](#导航压栈-push--pop)
     - [模态弹出 (Present / Dismiss)](#模态弹出-present--dismiss)
-    - [架构师视角的总结](#架构师视角的总结如何做技术选型)
 9. [渲染循环与转场底层原理](#9-渲染循环与转场底层原理)
 
 ---
