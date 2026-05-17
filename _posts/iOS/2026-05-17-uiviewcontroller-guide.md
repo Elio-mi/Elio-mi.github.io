@@ -18,8 +18,8 @@ tags: ['UIKit', 'UIViewController', 'Objective-C', '底层原理', '架构', '�
 6. [SafeArea 与自动布局适配](#6-safearea-与自动布局适配)
 7. [内存管理与 dealloc 时机排查](#7-内存管理与-dealloc-时机排查)
 8. [视图栈管理与出场方式](#8-视图栈管理与出场方式)
-    - [导航压栈 (Push / Pop)](#导航压栈-push--pop)
-    - [模态弹出 (Present / Dismiss)](#模态弹出-present--dismiss)
+    - [导航压栈 (Push / Pop)](#push-pop)
+    - [模态弹出 (Present / Dismiss)](#present-dismiss)
 9. [渲染循环与转场底层原理](#9-渲染循环与转场底层原理)
 
 ---
@@ -167,7 +167,7 @@ childVC.view.frame = self.contentView.bounds;
 
 在 iOS 开发中，`UIViewController` 的出场方式主要有两种：**导航压栈（Push）** 和 **模态弹出（Present）**。在架构设计的视角下，它们代表了两种完全不同的业务逻辑流转模型和内存管理机制。
 
-### 8.1 导航压栈 (Push / Pop)：层级递进的“书签”模式 {: #导航压栈-push--pop }
+### 8.1 导航压栈 (Push / Pop) {: #push-pop }
 
 **核心概念**：依赖于 `UINavigationController` 这个容器。它内部维护了一个**栈（Stack）**数据结构，遵循“后进先出（LIFO）”的原则。
 
@@ -197,7 +197,7 @@ childVC.view.frame = self.contentView.bounds;
     }
     ```
 
-### 8.2 模态弹出 (Present / Dismiss)：强打断的“弹窗”模式 {: #模态弹出-present--dismiss }
+### 8.2 模态弹出 (Present / Dismiss) {: #present-dismiss }
 
 **核心概念**：模态呈现是一种**强打断机制**。它不由 NavigationController 管理，而是由 `UIViewController` 自身提供的方法。任何一个 VC 都可以 `present` 另一个 VC。
 
