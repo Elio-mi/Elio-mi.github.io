@@ -3,9 +3,51 @@ title: AVAudioEngine 工作原理深度笔记
 date: 2026-06-26 00:00:00 +0800
 categories: ['iOS']
 tags: ['iOS', 'AVFoundation', 'AVAudioEngine', '音频', 'Swift']
+description: 从节点图、渲染时序、音频格式和实时线程约束理解 AVAudioEngine，并覆盖播放、录音、混音、离线渲染与中断恢复。
+toc: true
+audio_buffer_duration_chart:
+  animationDuration: 500
+  tooltip:
+    trigger: axis
+    axisPointer:
+      type: cross
+  legend:
+    data: ['44.1 kHz', '48 kHz']
+    top: 8
+  grid:
+    top: 58
+    left: 58
+    right: 24
+    bottom: 68
+  xAxis:
+    type: category
+    name: Buffer 帧数
+    nameLocation: middle
+    nameGap: 34
+    data: [128, 256, 512, 1024, 2048, 4096]
+  yAxis:
+    type: value
+    name: 理论时长（ms）
+    min: 0
+  dataZoom:
+    - type: inside
+      start: 0
+      end: 100
+    - type: slider
+      height: 18
+      bottom: 8
+  series:
+    - name: '44.1 kHz'
+      type: line
+      smooth: true
+      symbolSize: 8
+      data: [2.90, 5.80, 11.61, 23.22, 46.44, 92.88]
+    - name: '48 kHz'
+      type: line
+      smooth: true
+      symbolSize: 8
+      data: [2.67, 5.33, 10.67, 21.33, 42.67, 85.33]
 ---
-
-# AVAudioEngine 工作原理深度笔记
 
 `AVAudioEngine` 是 AVFoundation/AVFAudio 中的高级音频图引擎。它不是一个简单播放器，而是一个可以把多个音频节点连接起来的实时音频处理系统：你可以播放文件、采集麦克风、混音、加效果、录音、做离线渲染，甚至自己提供音频数据源。
 
@@ -58,6 +100,44 @@ tags: ['iOS', 'AVFoundation', 'AVAudioEngine', '音频', 'Swift']
 ## 2. AVAudioEngine 的图结构
 
 Engine 内部是一张有方向的图。音频信号通常从源头节点出发，经过一个或多个处理节点，最后流向输出节点。
+
+下面这张图把 `AVAudioSession` 和 Engine 音频图放在一起：Session 负责选择硬件策略和路由，但它本身不是图中的音频处理节点；真正的 PCM 数据在 Engine 节点之间流动。
+
+{% capture audio_engine_topology %}
+@startuml
+top to bottom direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+rectangle "App 内的 AVAudioEngine 图" {
+  component "AVAudioPlayerNode\n文件 / Buffer" as Player
+  component "inputNode\n麦克风输入" as Input
+  component "Audio Unit\nEQ / Reverb" as Effect
+  component "mainMixerNode\n混音 / 格式汇合" as Mixer
+  component "outputNode\n输出边界" as Output
+
+  Player -down-> Effect : PCM
+  Effect -down-> Mixer : processed PCM
+  Input -down-> Mixer : input PCM
+  Mixer -down-> Output : mixed PCM
+}
+
+rectangle "AVAudioSession\nCategory / Mode / Route" as Session
+cloud "麦克风" as Microphone
+cloud "扬声器 / 耳机" as Speaker
+
+Session ..> Input : 配置输入策略
+Session ..> Output : 配置输出策略
+Microphone -down-> Input : capture
+Output -down-> Speaker : playback
+@enduml
+{% endcapture %}
+
+{% include plantuml.html
+  source=audio_engine_topology
+  alt="AVAudioSession、AVAudioEngine 节点图与音频硬件之间的关系"
+  caption="控制关系使用虚线，PCM 音频流使用实线。点击图片可在 PlantUML 中查看源码。"
+%}
 
 常见图结构：
 
@@ -222,6 +302,40 @@ final class AudioEngineController {
 
 一个重要细节：`engine.start()` 只是启动音频图渲染，`player.play()` 才是让 `AVAudioPlayerNode` 真正开始吐数据。两者缺一不可。
 
+从时序上看，推荐先完成图配置和数据调度，再启动 Engine，最后让 player 进入播放状态：
+
+{% capture audio_engine_start_sequence %}
+@startuml
+skinparam shadowing false
+actor App
+participant AVAudioSession as Session
+participant AVAudioEngine as Engine
+participant AVAudioPlayerNode as Player
+participant "实时渲染线程" as Render
+
+App -> Session : setCategory(...)
+App -> Session : setActive(true)
+App -> Engine : attach(player)
+App -> Engine : connect(player, mixer)
+App -> Player : scheduleFile(...)
+App -> Engine : prepare()
+App -> Engine : start()
+Engine -> Render : 启动 pull / render
+App -> Player : play()
+
+loop 每个 render quantum
+  Render -> Player : 请求下一批 frames
+  Player --> Render : PCM 数据或静音
+end
+@enduml
+{% endcapture %}
+
+{% include plantuml.html
+  source=audio_engine_start_sequence
+  alt="AVAudioEngine 启动与 AVAudioPlayerNode 播放时序图"
+  caption="Engine 建立渲染时钟，Player 只在已调度且进入 play 状态后提供音频数据。"
+%}
+
 ---
 
 ## 5. 播放文件的最小例子
@@ -365,6 +479,8 @@ final class MicRecorder {
 - `installTap` block
 - 自定义 Audio Unit render block
 
+其中 Source/Sink/Audio Unit 的 render 回调具有最严格的实时约束。`installTap` 的回调也不是主线程，并且跟随音频数据持续到达；即使它不等同于自定义 Audio Unit 的 render block，也应保持轻量，把编码、文件整理和 UI 工作移交给普通工作线程。
+
 实时回调里尽量不要做：
 
 - 不要分配大量内存
@@ -385,6 +501,32 @@ final class MicRecorder {
 ```
 
 `prepare()` 的意义也在这里：提前准备资源，减少第一次启动渲染时的实时压力。
+
+### Buffer 大小对应多少处理时间
+
+帧数本身不代表时间，需要结合采样率换算：
+
+```text
+单个 buffer 的理论时长（ms） = frameCount ÷ sampleRate × 1000
+```
+
+{% include echarts.html
+  id="audio-buffer-duration-chart"
+  option=page.audio_buffer_duration_chart
+  height="440px"
+  label="44.1 kHz 与 48 kHz 下不同 Buffer 帧数对应的理论时长"
+%}
+
+图表可以悬停查看数值、切换采样率系列，并通过底部滑块缩放。几个常用量级：
+
+| Buffer | 44.1 kHz | 48 kHz |
+| :--- | ---: | ---: |
+| 128 frames | 2.90 ms | 2.67 ms |
+| 256 frames | 5.80 ms | 5.33 ms |
+| 512 frames | 11.61 ms | 10.67 ms |
+| 1024 frames | 23.22 ms | 21.33 ms |
+
+这只是“一批 PCM 数据覆盖多长时间”，不是完整的端到端延迟。真实延迟还会叠加 I/O buffer、硬件、格式转换、效果器预读以及线程调度成本。Buffer 越小，理论响应越快，但回调频率越高，留给每次处理的时间也越少。
 
 ---
 
@@ -638,6 +780,31 @@ NotificationCenter.default.addObserver(
 ```
 
 这里最重要的思路是：不要假设 Engine 启动后永远稳定。真实 App 需要能在路由变化、中断结束后恢复音频图。
+
+可以把恢复逻辑设计成显式状态机，避免在多个通知回调里零散地调用 `start()`：
+
+{% capture audio_engine_recovery_state %}
+@startuml
+skinparam shadowing false
+
+[*] --> Idle
+Idle --> Configured : 配置 Session\nattach / connect
+Configured --> Running : prepare + start
+Running --> Interrupted : interruption began
+Interrupted --> Rebuilding : interruption ended\n或 route/config changed
+Running --> Rebuilding : configuration changed
+Rebuilding --> Running : 重读格式\n必要时重连并 start
+Rebuilding --> Failed : 恢复失败
+Failed --> Rebuilding : 用户重试 / 条件恢复
+Running --> Idle : stop
+@enduml
+{% endcapture %}
+
+{% include plantuml.html
+  source=audio_engine_recovery_state
+  alt="AVAudioEngine 中断与配置变化恢复状态机"
+  caption="把恢复过程集中到一个状态机中，可以避免通知并发触发造成重复 start 或沿用旧格式。"
+%}
 
 ---
 
