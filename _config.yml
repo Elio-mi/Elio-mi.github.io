@@ -51,6 +51,12 @@ actions:
     url: "https://github.com/Elio-mi/Elio-mi.github.io/edit/main"
     static_url: false
 
+# PlantUML diagrams are rendered as SVG by the public PlantUML server.
+# Diagram source is encoded in the image URL, so do not use it for secrets.
+plantuml:
+  server: "https://www.plantuml.com/plantuml"
+  format: svg
+
 # Site Verification Settings
 webmaster_verifications:
   google: # fill in your Google verification code

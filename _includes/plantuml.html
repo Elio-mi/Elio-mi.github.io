@@ -1,0 +1,35 @@
+{% comment %}
+  Capture PlantUML source in a post, then pass it as `source` to this include.
+{% endcomment %}
+
+{% assign plantuml_server = site.plantuml.server | default: 'https://www.plantuml.com/plantuml' %}
+{% assign plantuml_format = include.format | default: site.plantuml.format | default: 'svg' %}
+{% assign plantuml_alt = include.alt | default: 'PlantUML 图表' %}
+
+{% if include.source and include.source != empty %}
+  {% assign encoded_source = include.source | strip | plantuml_encode %}
+  {% capture image_url %}{{ plantuml_server }}/{{ plantuml_format }}/{{ encoded_source }}{% endcapture %}
+  {% capture editor_url %}{{ plantuml_server }}/uml/{{ encoded_source }}{% endcapture %}
+
+  <figure class="card my-4 p-2 p-md-3 text-center">
+    <a
+      href="{{ editor_url }}"
+      target="_blank"
+      rel="noopener"
+      aria-label="在 PlantUML 服务中打开：{{ plantuml_alt | escape }}"
+    >
+      <img
+        src="{{ image_url }}"
+        alt="{{ plantuml_alt | escape }}"
+        class="img-fluid"
+        loading="lazy"
+        decoding="async"
+      >
+    </a>
+    {% if include.caption %}
+      <figcaption class="small text-muted pt-2">{{ include.caption }}</figcaption>
+    {% endif %}
+  </figure>
+{% else %}
+  <p class="alert alert-warning">PlantUML 图表缺少源代码。</p>
+{% endif %}
