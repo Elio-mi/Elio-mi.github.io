@@ -1,0 +1,105 @@
+{% assign chart_id = include.id | default: 'echarts-chart' %}
+{% assign chart_height = include.height | default: '420px' %}
+{% assign chart_label = include.label | default: '交互式图表' %}
+{% assign status_id = chart_id | append: '-status' %}
+
+<figure class="card my-4 p-2 p-md-3">
+  <div
+    id="{{ chart_id }}"
+    style="width: 100%; height: {{ chart_height | escape }};"
+    role="img"
+    aria-label="{{ chart_label | escape }}"
+    data-echarts-option="{{ include.option | jsonify | escape }}"
+  ></div>
+  <figcaption id="{{ status_id }}" class="small text-muted text-center pt-2">
+    图表加载中……
+  </figcaption>
+  <noscript>
+    <p class="small text-danger text-center mb-0">请启用 JavaScript 以查看交互式图表。</p>
+  </noscript>
+</figure>
+
+<script>
+  (() => {
+    const chartId = {{ chart_id | jsonify }};
+    const statusId = {{ status_id | jsonify }};
+    const clickTargetId = {{ include.click_target | jsonify }};
+    const libraryUrl = 'https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js';
+    let chart;
+
+    const setStatus = (message, isError = false) => {
+      const status = document.getElementById(statusId);
+      if (!status) return;
+      status.hidden = !message;
+      status.textContent = message || '';
+      status.classList.toggle('text-danger', isError);
+    };
+
+    const render = () => {
+      const container = document.getElementById(chartId);
+      if (!container || typeof window.echarts === 'undefined') return;
+
+      const option = JSON.parse(container.dataset.echartsOption);
+      option.backgroundColor = 'transparent';
+
+      if (chart) chart.dispose();
+      const theme = document.documentElement.dataset.bsTheme === 'dark' ? 'dark' : null;
+      chart = window.echarts.init(container, theme, { renderer: 'canvas' });
+      chart.setOption(option);
+      setStatus('');
+
+      if (clickTargetId) {
+        chart.on('click', (params) => {
+          const target = document.getElementById(clickTargetId);
+          if (!target) return;
+          const value = Array.isArray(params.value) ? params.value.join(', ') : params.value;
+          target.textContent = `你点击了「${params.seriesName}」中的「${params.name}」，数值为 ${value}。`;
+        });
+      }
+    };
+
+    const loadLibrary = () => {
+      if (typeof window.echarts !== 'undefined') {
+        render();
+        return;
+      }
+
+      let loader = document.querySelector('script[data-echarts-loader]');
+      if (!loader) {
+        loader = document.createElement('script');
+        loader.src = libraryUrl;
+        loader.dataset.echartsLoader = 'true';
+        loader.addEventListener('error', () => {
+          setStatus('ECharts 加载失败，请检查网络连接后刷新页面。', true);
+        }, { once: true });
+        document.head.appendChild(loader);
+      }
+
+      loader.addEventListener('load', render, { once: true });
+    };
+
+    loadLibrary();
+
+    if ('ResizeObserver' in window) {
+      const container = document.getElementById(chartId);
+      if (container) {
+        new ResizeObserver(() => {
+          if (chart) chart.resize();
+        }).observe(container);
+      }
+    } else {
+      window.addEventListener('resize', () => {
+        if (chart) chart.resize();
+      });
+    }
+
+    new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.attributeName === 'data-bs-theme')) {
+        render();
+      }
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-bs-theme']
+    });
+  })();
+</script>
