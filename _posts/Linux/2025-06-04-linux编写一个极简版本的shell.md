@@ -13,7 +13,7 @@ bash的命令行提示符：**[用户名@主机名 当前目录]**
 
 [mi@lavm-5wklnbmaja demo1]
 
-![image-20231109205329152](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231109205329152.png)
+![image-20231109205329152](/assets/img/remote/gitee.com/1829b1d81681e7e9d9071a4f.png)
 
 所以我们无限循环去打印这个命令行提示符 
 
@@ -36,7 +36,7 @@ int main()
 
 运行效果：
 
-![image-20231109210135984](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231109210135984.png)
+![image-20231109210135984](/assets/img/remote/gitee.com/4bdb588dd8384a7e7e67e691.png)
 
 ## ①读取命令行
 
@@ -74,7 +74,7 @@ commondstr[strlen(commondstr) - 1] = '\0';//处理fget获取了换行符的问�
 
 运行结果：
 
-![image-20231109212142534](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231109212142534.png)
+![image-20231109212142534](/assets/img/remote/gitee.com/e6123335b2e66f658f5cc82b.png)
 
 ## ②父子进程框架
 
@@ -155,7 +155,7 @@ void DebugPrint(char* argv[])
 
 运行结果：
 
-![image-20231109224418103](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231109224418103.png)
+![image-20231109224418103](/assets/img/remote/gitee.com/c58f40dda3be9118daf80053.png)
 
 ## ④子进程借用分割的结果来替换程序
 
@@ -178,7 +178,7 @@ void DebugPrint(char* argv[])
 
 那么这时候我们在运行一下：
 
-![image-20231109225424556](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231109225424556.png)
+![image-20231109225424556](/assets/img/remote/gitee.com/a1b4153fc50f4d9b19a42b11.png)
 
 ---
 
@@ -186,13 +186,13 @@ void DebugPrint(char* argv[])
 
 我们看到我们在用`bash`提供的`ls`的时候，它产生的结果是带有颜色的。
 
-![image-20231110135556660](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110135556660.png)
+![image-20231110135556660](/assets/img/remote/gitee.com/e895fb814ff9955279aa463b.png)
 
 但是我们自己实现的简易`Shell`是没有颜色的，那么这到底是为什么？
 
 我们`which ls`查看一下，原来系统在`ls`后边面追加了一个参数`--color==auto`;
 
-![image-20231110135703672](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110135703672.png)
+![image-20231110135703672](/assets/img/remote/gitee.com/bbf216dce19901ae94f60b36.png)
 
 那么我们也可以对我们的简易`Shell`进行一些优化让他支持这样的显示：
 
@@ -215,7 +215,7 @@ void DebugPrint(char* argv[])
 
 运行效果：
 
-![image-20231110140325861](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110140325861.png)
+![image-20231110140325861](/assets/img/remote/gitee.com/b9129f8efc6244dfae5abde4.png)
 
 ---
 
@@ -231,7 +231,7 @@ void DebugPrint(char* argv[])
 
 我们发现不论我们怎么切换目录，结果都是目录没有变化，**原因是我们是在子进程中运行这些命令行的，**进程具有独立性。其实我们切换目录是切换了子进程的目录，但是父进程也就是我们`pwd`显示的目录却没有任何变化,并且这里其实`pwd`的也是子进程的当前目录，但是因为子进程在执行完`cd`命令后，就被`exit`了。当我们再执行`pwd`的时候是一个新的子进程在帮我们完成这个命令，因为我们之前`cd`没有改变父进程的当前目录，那么新创建的子进程的目录也就变成了和父进程一样的，所以看起来我们就是没有改变当前目录一样。
 
-![image-20231110140734849](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110140734849.png)
+![image-20231110140734849](/assets/img/remote/gitee.com/156eed2b66c48cfb89eda531.png)
 
 所以这里的`cd`命令，我们要在父进程中交给一个函数`chdir()`来让我们的`bash`来执行:
 
@@ -248,7 +248,7 @@ void DebugPrint(char* argv[])
 
 运行结果：
 
-![image-20231110142305250](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110142305250.png)
+![image-20231110142305250](/assets/img/remote/gitee.com/e6fb915f0ccc7780844653fb.png)
 
 （3）`export`命令
 
@@ -272,11 +272,11 @@ void DebugPrint(char* argv[])
 
 我们尝试测试一下：
 
-![image-20231110151609156](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110151609156.png)
+![image-20231110151609156](/assets/img/remote/gitee.com/c8b3eb44a74da2a53cf97247.png)
 
 最终我们找到了
 
-![image-20231110151622993](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110151622993.png)
+![image-20231110151622993](/assets/img/remote/gitee.com/de4a44c692d3f87c8ddf8597.png)
 
 但是我们的`env`打印的好像是子进程的环境变量，这似乎不是我们想要的，我们应该想要的是父进程的环境变量，所以我们再做一下处理：
 
@@ -301,9 +301,9 @@ void DebugPrint(char* argv[])
 
 运行效果：
 
-![image-20231110152530084](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110152530084.png)
+![image-20231110152530084](/assets/img/remote/gitee.com/53324268181405cf5007f0f3.png)
 
-![image-20231110152557349](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110152557349.png)
+![image-20231110152557349](/assets/img/remote/gitee.com/118c119cf380c0bb3fe7f56f.png)
 
 **所以其实我们之前学习的几乎所有的环境变量，相关的命令都是内建命令**。
 
@@ -330,7 +330,7 @@ void DebugPrint(char* argv[])
 
 运行结果：
 
-![image-20231110155212975](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110155212975.png)
+![image-20231110155212975](/assets/img/remote/gitee.com/e000aafc41babc7fe12fa285.png)
 
 既然支持了环境变量的查询，我们再来顺便支持一下进程退出码的支持，也就是我们的`echo $?`
 
@@ -365,7 +365,7 @@ void DebugPrint(char* argv[])
 
 测试结果：
 
-![image-20231110160243796](https://gitee.com/slow-heating-shaanxi-people/pictrue/raw/master/pmm/image-20231110160243796.png)
+![image-20231110160243796](/assets/img/remote/gitee.com/ef0ef193adb40c6d40ec147e.png)
 
 ⑦代码汇总：
 
